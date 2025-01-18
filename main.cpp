@@ -3,277 +3,127 @@
 #include "mbed.h"
 #include "arm_book_lib.h"
 
-//=====[Declaration and initialization of public global objects]===============
+//=====[Global Objects]========================================================
 
-DigitalIn driverSeatDetector(D4);
-DigitalIn passengerSeatDetector(D5);
-DigitalIn driverSeatbelt(D2);
-DigitalIn passengerSeatbelt(D3);
-DigitalIn startEngineButton(D6);
+DigitalIn isDriverSeatOccupied(D4);        // Detect if the driver seat is occupied
+DigitalIn isPassengerSeatOccupied(D5);     // Detect if the passenger seat is occupied
+DigitalIn isDriverSeatbeltFastened(D2);    // Detect if the driver seatbelt is fastened
+DigitalIn isPassengerSeatbeltFastened(D3); // Detect if the passenger seatbelt is fastened
+DigitalIn isStartEngineButtonPressed(D6);  // Detect if the engine start button is pressed
 
-DigitalOut engineEnabledLed(LED1);
-DigitalOut engineStartedLed(LED2);
+DigitalOut engineReadyLed(LED1);           // LED to indicate the engine is ready to start
+DigitalOut engineRunningLed(LED2);         // LED to indicate the engine is running
 
-DigitalInOut carAlarm(PE_10);
+DigitalInOut carAlarmSignal(PE_10);        // Alarm system to notify incorrect conditions
 
-UnbufferedSerial uartUsb(USBTX, USBRX, 115200);
+UnbufferedSerial uartUsb(USBTX, USBRX, 115200); // USB serial communication
 
-//=====[Declaration and initialization of public global variables]=============
-bool greenLedState = OFF;
-bool checkDriverSeat = ON;
-bool checkEngineReady = ON;
-bool checkEngineStart = ON;
-bool checkBuzzer = ON;
-// int numberOfIncorrectCodes = 0;
-// int buttonBeingCompared    = 0;
+//=====[Global Variables]======================================================
 
-//=====[Declarations (prototypes) of public functions]=========================
+bool isEngineReady = false;                 // Tracks if the engine is ready (green LED on)
+bool hasDriverBeenGreeted = true;           // Tracks if the driver has been greeted
+bool isEngineReadyCheckPending = true;      // Tracks if engine readiness needs to be checked
+bool isEngineStartCheckPending = true;      // Tracks if engine start conditions need to be checked
+bool isAlarmCheckPending = true;            // Tracks if alarm conditions need to be checked
 
-void inputsInit();
-void outputsInit();
+//=====[Function Prototypes]===================================================
+void initializeInputPins();                 
+void initializeOutputPins();               
+void updateEngineReadyState();              // Update the state of the engine readiness
+void handleEngineStartConditions();         // Check and manage engine start conditions
+void activateCarAlarm();                    // Trigger the car alarm with a fixed message
 
-void checkForGreenLed();
-void checkStartEngine();
-
-// void alarmActivationUpdate();
-// void alarmDeactivationUpdate();
-
-// void uartTask();
-// void availableCommands();
-
-//=====[Main function, the program entry point after power on or reset]========
+//=====[Main Function]=========================================================
 
 int main()
 {
-    inputsInit();
-    outputsInit();
+    initializeInputPins();  
+    initializeOutputPins(); 
+
     while (true) {
-        checkForGreenLed();
-        checkStartEngine();
-
-        // if (startEngineButton && !(driverSeatbelt && passengerSeatbelt && driverSeatDetector && passengerSeatDetector)){
-        //     carAlarm.output();                                     
-        //     carAlarm = LOW;  
-        //     if (checkBuzzer){
-        //         if(!driverSeatbelt){
-        //             uartUsb.write( "Driver seatbelt not fastened\r\n\r\n", 32);
-        //         }
-        //         if(!passengerSeatbelt){
-        //             uartUsb.write( "Passenger seatbelt not fastened\r\n\r\n", 35);
-        //         }
-        //         if(!driverSeatDetector){
-        //             uartUsb.write( "Driver seat not occupied\r\n\r\n", 30);
-        //         }
-        //         if(!passengerSeatDetector){
-        //             uartUsb.write( "Passenger seat not occupied\r\n\r\n", 33);
-        //         }
-
-        //         checkBuzzer = OFF;
-        //     }
-        // }
-
-        
-        
+        updateEngineReadyState();     
+        handleEngineStartConditions(); 
     }
 }
 
-//=====[Implementations of public functions]===================================
-void wrongCode()
+//=====[Function Implementations]==============================================
+
+void initializeInputPins()
 {
-    if (startEngineButton && !(driverSeatbelt && passengerSeatbelt && driverSeatDetector && passengerSeatDetector)){
-        carAlarm.output();                                     
-        carAlarm = LOW;
-    }
+    // Configure input pins with pull-down resistors
+    isDriverSeatOccupied.mode(PullDown);
+    isPassengerSeatOccupied.mode(PullDown);
+    isDriverSeatbeltFastened.mode(PullDown);
+    isPassengerSeatbeltFastened.mode(PullDown);
+    isStartEngineButtonPressed.mode(PullDown);
+
+    // Configure car alarm pin as open-drain input by default
+    carAlarmSignal.mode(OpenDrain);
+    carAlarmSignal.input();
 }
 
-void inputsInit()
+void initializeOutputPins()
 {
-    driverSeatDetector.mode(PullDown);
-    passengerSeatDetector.mode(PullDown);
-    driverSeatbelt.mode(PullDown);
-    passengerSeatbelt.mode(PullDown);
-    startEngineButton.mode(PullDown);
-    carAlarm.mode(OpenDrain);
-    carAlarm.input();
+    // Set initial states of LEDs
+    engineReadyLed = OFF;
+    engineRunningLed = OFF;
 }
 
-void outputsInit()
+void updateEngineReadyState()
 {
-    engineEnabledLed = OFF;
-    engineStartedLed = OFF;
-}
-
-void checkForGreenLed(){
-    if(driverSeatDetector && !(passengerSeatDetector && driverSeatbelt && passengerSeatbelt)){
-        if (checkDriverSeat){
-                uartUsb.write( "Welcome to enhanced alarm system model 218-W24\r\n\r\n", 50);
-
-                checkDriverSeat = OFF;
+    // Engine not ready: Driver seat occupied but other conditions not met
+    if (isDriverSeatOccupied && !(isPassengerSeatOccupied && isDriverSeatbeltFastened && isPassengerSeatbeltFastened)) {
+        if (hasDriverBeenGreeted) {
+            // Display a welcome message once
+            uartUsb.write("Welcome to enhanced alarm system model 218-W24\r\n\r\n", 50);
+            hasDriverBeenGreeted = false;
         }
-        greenLedState = OFF;
+        isEngineReady = false;
     }
-    
-
-    else if(driverSeatDetector && passengerSeatDetector && driverSeatbelt && passengerSeatbelt && !startEngineButton){
-        if (checkEngineReady){
-                engineEnabledLed = ON;
-                engineStartedLed = OFF;
-
-                checkEngineReady = OFF;
+    // Engine ready: All conditions for readiness are met
+    else if (isDriverSeatOccupied && isPassengerSeatOccupied && isDriverSeatbeltFastened && isPassengerSeatbeltFastened && !isStartEngineButtonPressed) {
+        if (isEngineReadyCheckPending) {
+            // Turn on engine ready LED and reset running LED
+            engineReadyLed = ON;
+            engineRunningLed = OFF;
+            isEngineReadyCheckPending = false;
         }
-        greenLedState = ON;
-    }
-        
-    
-}
-
-void checkStartEngine(){
-    if (startEngineButton && greenLedState == ON){
-        if (checkEngineStart){
-                engineEnabledLed = OFF;
-                engineStartedLed = ON;                
-                uartUsb.write( "Engine started\r\n\r\n", 20);
-                checkEngineStart = OFF;
-        }
-    }
-    else if (startEngineButton && greenLedState == OFF){
-        carAlarm.output();                                     
-        carAlarm = LOW; 
-        if(checkBuzzer){
-            if(!driverSeatbelt){
-            uartUsb.write( "Driver seatbelt not fastened\r\n\r\n", 32);
-            }
-            if(!passengerSeatbelt){
-            uartUsb.write( "Passenger seatbelt not fastened\r\n\r\n", 35);
-            }
-            if(!driverSeatDetector){
-            uartUsb.write( "Driver seat not occupied\r\n\r\n", 30);
-            }
-            if(!passengerSeatDetector){
-            uartUsb.write( "Passenger seat not occupied\r\n\r\n", 33);
-            }
-
-            checkBuzzer = OFF;
-        }
-        
+        isEngineReady = true;
     }
 }
-// void alarmActivationUpdate()
-// {
-//     if ( gasDetector || overTempDetector ) {
-//         alarmState = ON;
-//     }
-//     alarmLed = alarmState;
-// }
 
-// void alarmDeactivationUpdate()
-// {
-//     if ( numberOfIncorrectCodes < 5 ) {
-//         if ( aButton && bButton && cButton && dButton && !enterButton ) {
-//             incorrectCodeLed = OFF;
-//         }
-//         if ( enterButton && !incorrectCodeLed && alarmState ) {
-//             if ( aButton && bButton && !cButton && !dButton ) {
-//                 alarmState = OFF;
-//                 numberOfIncorrectCodes = 0;
-//             } else {
-//                 incorrectCodeLed = ON;
-//                 numberOfIncorrectCodes++;
-//             }
-//         }
-//     } else {
-//         systemBlockedLed = ON;
-//     }
-// }
+void handleEngineStartConditions()
+{
+    // Start engine if button is pressed and engine is ready
+    if (isStartEngineButtonPressed && isEngineReady) {
+        if (isEngineStartCheckPending) {
+            // Update LED states and notify via UART
+            engineReadyLed = OFF;
+            engineRunningLed = ON;
+            uartUsb.write("Engine started\r\n\r\n", 20);
+            isEngineStartCheckPending = false;
+        }
+    }
+    // Trigger alarm if button is pressed but engine is not ready
+    else if (isStartEngineButtonPressed && !isEngineReady) {
+        carAlarmSignal.output();
+        carAlarmSignal = LOW; 
 
-// void uartTask()
-// {
-//     char receivedChar = '\0';
-//     if( uartUsb.readable() ) {
-//         uartUsb.read( &receivedChar, 1 );
-//         switch (receivedChar) {
-//         case '1':
-//             if ( alarmState ) {
-//                 uartUsb.write( "The alarm is activated\r\n", 24);
-//             } else {
-//                 uartUsb.write( "The alarm is not activated\r\n", 28);
-//             }
-//             break;
-
-//         case '2':
-//             if ( gasDetector ) {
-//                 uartUsb.write( "Gas is being detected\r\n", 22);
-//             } else {
-//                 uartUsb.write( "Gas is not being detected\r\n", 27);
-//             }
-//             break;
-
-//         case '3':
-//             if ( overTempDetector ) {
-//                 uartUsb.write( "Temperature is above the maximum level\r\n", 40);
-//             } else {
-//                 uartUsb.write( "Temperature is below the maximum level\r\n", 40);
-//             }
-//             break;
-            
-//         case '4':
-//             uartUsb.write( "Please enter the code sequence.\r\n", 33 );
-//             uartUsb.write( "First enter 'A', then 'B', then 'C', and ", 41 ); 
-//             uartUsb.write( "finally 'D' button\r\n", 20 );
-//             uartUsb.write( "In each case type 1 for pressed or 0 for ", 41 );
-//             uartUsb.write( "not pressed\r\n", 13 );
-//             uartUsb.write( "For example, for 'A' = pressed, ", 32 );
-//             uartUsb.write( "'B' = pressed, 'C' = not pressed, ", 34);
-//             uartUsb.write( "'D' = not pressed, enter '1', then '1', ", 40 );
-//             uartUsb.write( "then '0', and finally '0'\r\n\r\n", 29 );
-
-//             incorrectCode = false;
-
-//             for ( buttonBeingCompared = 0; 
-//                   buttonBeingCompared < NUMBER_OF_KEYS; 
-//                   buttonBeingCompared++) {
-
-//                 uartUsb.read( &receivedChar, 1 );
-//                 uartUsb.write( "*", 1 );
-
-//                 if ( receivedChar == '1' ) {
-//                     if ( codeSequence[buttonBeingCompared] != 1 ) {
-//                         incorrectCode = true;
-//                     }
-//                 } else if ( receivedChar == '0' ) {
-//                     if ( codeSequence[buttonBeingCompared] != 0 ) {
-//                         incorrectCode = true;
-//                     }
-//                 } else {
-//                     incorrectCode = true;
-//                 }
-//             }
-
-//             if ( incorrectCode == false ) {
-//                 uartUsb.write( "\r\nThe code is correct\r\n\r\n", 25 );
-//                 alarmState = OFF;
-//                 incorrectCodeLed = OFF;
-//                 numberOfIncorrectCodes = 0;
-//             } else {
-//                 uartUsb.write( "\r\nThe code is incorrect\r\n\r\n", 27 );
-//                 incorrectCodeLed = ON;
-//                 numberOfIncorrectCodes++;
-//             }                
-//             break;
-
-//         default:
-//             availableCommands();
-//             break;
-
-//         }
-//     }
-// }
-
-// void availableCommands()
-// {
-//     uartUsb.write( "Available commands:\r\n", 21 );
-//     uartUsb.write( "Press '1' to get the alarm state\r\n", 34 );
-//     uartUsb.write( "Press '2' to get the gas detector state\r\n", 41 );
-//     uartUsb.write( "Press '3' to get the over temperature detector state\r\n", 54 );
-//     uartUsb.write( "Press '4' to enter the code sequence\r\n\r\n", 40 );
-// }
+        if (isAlarmCheckPending) {
+            // Check and report unmet conditions
+            if (!isDriverSeatbeltFastened) {
+                uartUsb.write("Driver seatbelt not fastened\r\n\r\n", 32);
+            }
+            if (!isPassengerSeatbeltFastened) {
+                uartUsb.write("Passenger seatbelt not fastened\r\n\r\n", 35);
+            }
+            if (!isDriverSeatOccupied) {
+                uartUsb.write("Driver seat not occupied\r\n\r\n", 30);
+            }
+            if (!isPassengerSeatOccupied) {
+                uartUsb.write("Passenger seat not occupied\r\n\r\n", 33);
+            }
+            isAlarmCheckPending = false;
+        }
+    }
+}
