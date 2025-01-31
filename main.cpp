@@ -173,10 +173,13 @@ void whileEngineRunning() {
 
 void turnOffEngine(){
     if (engineRunningLed && isStartEngineButtonPressed){
-        check = true;
-        uartUsb.write("Engine stopped \r\n\r\n", 19);
-        delay(300);
-        main();
+        delay(100);
+        if(!isStartEngineButtonPressed) {
+            check = true;
+            uartUsb.write("Engine stopped \r\n\r\n", 19);
+            delay(300);
+            main();
+        }
     }
 }
 
