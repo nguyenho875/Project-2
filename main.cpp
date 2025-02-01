@@ -3,7 +3,6 @@
 #include "mbed.h"
 #include "arm_book_lib.h"
 
-
 #define NUM_SAMPLES 10
 #define DAY_THRESHOLD 0.26
 #define NIGHT_THRESHOLD 0.45
@@ -35,7 +34,8 @@ bool hasDriverBeenGreeted = true;           // Tracks if the driver has been gre
 bool isEngineReadyCheckPending = true;      // Tracks if engine readiness needs to be checked
 bool isEngineStartCheckPending = true;      // Tracks if engine start conditions need to be checked
 bool isAlarmCheckPending = true;            // Tracks if alarm conditions need to be checked
-bool check = true;
+bool systemFailAndRestart= true;            // Tracks if the system is failing and restart
+
 float potRead = 0.0;
 int strlength = 0;
 char str[100];
@@ -51,12 +51,12 @@ void initializeOutputPins();
 void updateEngineReadyState();              // Update the state of the engine readiness
 void handleEngineStartConditions();         // Check and manage engine start conditions
 void activateCarAlarm();                    // Trigger the car alarm with a fixed message
-void turnOffEngine();
-void chooseLightOption();
-void whileEngineRunning();
-void lightSensorInit(); 
+void turnOffEngine();                       // Check to turn off the engine
+void chooseLightOption();                   // User choose the light option
+void whileEngineRunning();                  // While the engine is running, check if the user wants to turn offthe  engine, or choose a light option
+void lightSensorInit();                 
 float lightSensorRead();
-void autoLight();
+void autoLight();                           // Auto light option
 
 //=====[Main Function]=========================================================
 
@@ -159,8 +159,8 @@ void handleEngineStartConditions()
                 uartUsb.write("Passenger seat not occupied\r\n\r\n", 31);
             }
             isAlarmCheckPending = false;
-            check = false;
-            main();
+            systemFailAndRestart= false;
+            main(); //call the main() fundtion again to restart the 
         }
     }
 }
@@ -175,7 +175,7 @@ void turnOffEngine(){
     if (engineRunningLed && isStartEngineButtonPressed){
         delay(100);
         if(!isStartEngineButtonPressed) {
-            check = true;
+            systemFailAndRestart= true;
             uartUsb.write("Engine stopped \r\n\r\n", 19);
             delay(300);
             main();
@@ -205,7 +205,6 @@ void lightSensorInit() {
     }
 }
 
-
 float lightSensorRead() {
     // Take a new sample
     lightReadings[index] = lightSensor.read(); // Read value (0.0 - 1.0)
@@ -225,8 +224,8 @@ void autoLight() {
         if (!(leftLowLamp && rightLowLamp)) {
             delay(2000);
         }
-        leftLowLamp = 1; // Turn ON light
-        rightLowLamp = 1;
+        leftLowLamp = 1;
+        rightLowLamp = 1; 
 
     } else if (lightLevel < DAY_THRESHOLD) {
         if (leftLowLamp && rightLowLamp) {
