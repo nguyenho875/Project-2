@@ -13,7 +13,6 @@ The ignition subsystem should be able to welcome the driver once the seat is occ
 The driver controls the car's headlight using a mode selector represented by a potentiometer. There are 3 modes to the selector, ON to always turn on both headlights, OFF to always turn them off, and AUTO to turn them on and off depending on the brightness sensed by a light sensor. 
 
 <br/>
-<br/>
 
 ### Starting Repository
 https://github.com/DwyerJd/Project1
