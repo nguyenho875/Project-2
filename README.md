@@ -22,6 +22,7 @@ https://github.com/DwyerJd/Project1
 
 ### Testing results
 - Ignition subsystem
+
 | Specification | Test Result | Comment |
 |----------|----------|----------|
 | Ignition Subsystem | | |
@@ -31,6 +32,7 @@ https://github.com/DwyerJd/Project1
 | Turn on both LEDs when the mode selector (potentiometer) is turned to the ON mode. | Pass | | |
 
 - Automatic headlight control subsystem
+
 | Specification | Test Result | Comment |
 |----------|----------|----------|
 | Automatic headlight control subsystem | | |
