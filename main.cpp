@@ -32,7 +32,7 @@ AnalogIn lightSensor(A2);
 bool isEngineReady = false;                 // Tracks if the engine is ready (green LED on)
 bool hasDriverBeenGreeted = true;           // Tracks if the driver has been greeted
 bool isEngineReadyCheckPending = true;      // Tracks if engine readiness needs to be checked
-bool isEngineStartCheckPending = true;      // Tracks if engine start conditions need to be checked
+bool isEngineStartCheckPending = true;      // Tracks if the engine start conditions need to be checked
 bool isAlarmCheckPending = true;            // Tracks if alarm conditions need to be checked
 bool systemFailAndRestart= true;            // Tracks if the system is failing and restart
 
@@ -53,7 +53,7 @@ void handleEngineStartConditions();         // Check and manage engine start con
 void activateCarAlarm();                    // Trigger the car alarm with a fixed message
 void turnOffEngine();                       // Check to turn off the engine
 void chooseLightOption();                   // User choose the light option
-void whileEngineRunning();                  // While the engine is running, check if the user wants to turn offthe  engine, or choose a light option
+void whileEngineRunning();                  // While the engine is running, check if the user wants to turn off the engine, or choose a light option
 void lightSensorInit();                 
 float lightSensorRead();
 void autoLight();                           // Auto light option
@@ -65,7 +65,7 @@ int main()
     isEngineReady = false;                 // Tracks if the engine is ready (green LED on)
     hasDriverBeenGreeted = true;           // Tracks if the driver has been greeted
     isEngineReadyCheckPending = true;      // Tracks if engine readiness needs to be checked
-    isEngineStartCheckPending = true;      // Tracks if engine start conditions need to be checked
+    isEngineStartCheckPending = true;      // Tracks if the engine start conditions need to be checked
     isAlarmCheckPending = true;            // Tracks if alarm conditions need to be checked
     initializeInputPins();  
     initializeOutputPins(); 
