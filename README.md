@@ -21,7 +21,7 @@ https://github.com/DwyerJd/Project1
 <br/>
 
 ### Testing results
-Ignition subsystem
+- Ignition subsystem
 | Specification | Test Result | Comment |
 |----------|----------|----------|
 | Ignition Subsystem | | |
@@ -30,7 +30,7 @@ Ignition subsystem
 | Keep the engine running even if the driver/passenger should unfasten belt and exit the vehicle.| Pass | | |
 | Turn on both LEDs when the mode selector (potentiometer) is turned to the ON mode. | Pass | | |
 
-Automatic headlight control subsystem
+- Automatic headlight control subsystem
 | Specification | Test Result | Comment |
 |----------|----------|----------|
 | Automatic headlight control subsystem | | |
