@@ -22,8 +22,6 @@ https://github.com/DwyerJd/Project1
 | Enable engine start (i.e., light the green LED) while both seats are occupied and seatbelts fastened. Otherwise print appropriate error message.    | Pass   | All error messages are displayed on serial monitor.   |
 | Start the engine (i.e., light the blue LED, turn off Green) when ignition is enabled (green LED) and ignition button is pressed  (i.e., before the button is released).   | Pass   | |
 | Keep the engine running even if the driver/passenger should unfasten belt and exit the vehicle.| Pass | |
-| 
-
 | Turn on both LEDs when the mode selector (potentiometer) is turned to the ON mode. | Pass |
 | Turn off both LEDs when the mode selector is turned to the OFF mode. | Pass |
 | In AUTO mode, LEDs turn on after a 1 second delay when brightness is above “daylight” level, simulated by a phone flashlight placed 2 ft above the sensor. | Pass|
