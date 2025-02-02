@@ -17,8 +17,7 @@ https://github.com/DwyerJd/Project1
 
 
 ### Testing results
-|Ignition Subsystem |
-|----------|----------|----------|
+
 | Specification | Test Result | Comment |
 |----------|----------|----------|
 | Enable engine start (i.e., light the green LED) while both seats are occupied and seatbelts fastened. Otherwise print appropriate error message.    | Pass   | All error messages are displayed on serial monitor.   |
