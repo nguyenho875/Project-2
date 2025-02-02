@@ -1,5 +1,5 @@
 ## Project 2: Enhanced Car Alarm and Automatic Headlight Control System
-## Team Members: Hoang Tran and Nguyen Ho
+### Team Members: Hoang Tran and Nguyen Ho
 
 Our project aims to enhance and implement two car subsystems, ignition alarm and automatic headlight control.
 
