@@ -31,6 +31,8 @@ https://github.com/DwyerJd/Project1
 | Keep the engine running even if the driver/passenger should unfasten belt and exit the vehicle.| Pass | | |
 | Turn on both LEDs when the mode selector (potentiometer) is turned to the ON mode. | Pass | | |
 
+<br/>
+
 - Automatic headlight control subsystem
 
 | Specification | Test Result | Comment |
