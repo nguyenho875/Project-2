@@ -37,8 +37,8 @@ https://github.com/DwyerJd/Project1
 | Specification | Test Result | Comment |
 |----------|----------|----------|
 | Turn on both LEDs when the mode selector (potentiometer) is turned to the ON mode. | Pass | In this code, ON mode is turning potentiometer all the way to the right.| | 
-| Turn off both LEDs when the mode selector is turned to the OFF mode. | Pass | In this code, OFF mode is turning potentiometer all the way to the left.| | 
-| In AUTO mode, LEDs turn on after a 1 second delay when brightness is above “daylight” level, simulated by a phone flashlight placed 2 ft above the sensor. | Pass| In this code, AUTO mode is turning potentiometer anywhere else other than ON and OFF modes. | |
+| Turn off both LEDs when the mode selector is turned to the OFF mode. | Pass | | | 
+| In AUTO mode, LEDs turn on after a 1 second delay when brightness is above “daylight” level, simulated by a phone flashlight placed 2 ft above the sensor. | Pass|  | |
 | In AUTO mode, LEDs turn off after a 2 second delay when brightness is below “dusk” level, simulated by holding a sheet of paper 6 in above the sensor | Pass | | |
 | In AUTO mode, LEDS hold their previous state when the brightness is between “daylight” and “dusk” levels. | Pass | LEDs also hold their previous state when transitioning from ON and OFF to AUTO mode.  | |
 
